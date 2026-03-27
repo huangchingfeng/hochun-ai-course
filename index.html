@@ -1,666 +1,1864 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>B2B 產品行銷與業務開發 AI 賦能實戰班 | 和椿科技</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <title>和椿科技 AI 提示詞產生器｜B2B AI 實戰班</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        /* ===== Reset & Base ===== */
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: 'Noto Sans TC', 'Inter', sans-serif;
-            background: #0A1628;
-            color: #C7C7CC;
-            line-height: 1.7;
-            overflow-x: hidden;
+        :root {
+            --brand-teal: #0D9488;
+            --brand-teal-dark: #0F766E;
+            --brand-teal-light: #CCFBF1;
+            --brand-navy: #1E293B;
+            --brand-warm: #F59E0B;
+            --bg-light: #F0FDFA;
+            --card-shadow: 0 4px 12px rgba(13,148,136,0.08), 0 2px 4px rgba(0,0,0,0.04);
+            --card-radius: 12px;
+            --gradient-teal: linear-gradient(135deg, #0D9488 0%, #14B8A6 100%);
+            --gradient-dark: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #1E3A5F 100%);
         }
-        a { color: #00D4FF; text-decoration: none; transition: color 0.2s; }
-        a:hover { color: #33DDFF; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
-
-        /* ===== Navigation ===== */
-        .navbar {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(10, 22, 40, 0.92); backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+        body { background-color: var(--bg-light); font-family: 'Inter', 'Noto Sans TC', sans-serif; color: var(--brand-navy); }
+        .navbar { background: #ffffff; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .navbar-brand { color: #1a1a1a !important; font-weight: 700; font-size: 1.05rem; }
+        .main-container { margin-top: 24px; margin-bottom: 60px; }
+        .card { border-radius: var(--card-radius); box-shadow: var(--card-shadow); border: 1px solid rgba(13,148,136,0.1); background: white; }
+        .card-header { border-bottom: 2px solid var(--brand-teal-light); background: white !important; }
+        .form-control-lg { min-height: 120px; font-family: 'Noto Sans TC', monospace; font-size: 0.95rem; border-color: rgba(13,148,136,0.2); }
+        .form-control-lg:focus { border-color: var(--brand-teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.15); }
+        .form-select:focus { border-color: var(--brand-teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.15); }
+        .output-container {
+            background: linear-gradient(135deg, #F0FDFA 0%, #F0FDF4 100%);
+            border: 2px dashed rgba(13,148,136,0.3); padding: 24px;
+            border-radius: 10px; position: relative; white-space: pre-wrap;
+            word-wrap: break-word; font-family: 'Noto Sans TC', monospace;
+            min-height: 200px; font-size: 0.95rem; line-height: 1.7;
         }
-        .nav-container {
-            max-width: 1100px; margin: 0 auto; padding: 0 24px;
-            display: flex; align-items: center; justify-content: space-between; height: 64px;
+        .copy-btn { position: absolute; top: 12px; right: 12px; }
+        .template-count { font-size: 0.78rem; color: var(--brand-navy); opacity: 0.5; margin-left: 4px; }
+        .filter-btn { border-radius: 20px; padding: 6px 16px; font-size: 0.9rem; border: 1.5px solid rgba(13,148,136,0.3); color: var(--brand-teal-dark); background: white; transition: all 0.2s; }
+        .filter-btn:hover { background: var(--brand-teal-light); border-color: var(--brand-teal); }
+        .filter-btn.active { font-weight: 700; background: var(--gradient-teal) !important; color: white !important; border-color: var(--brand-teal) !important; box-shadow: 0 2px 8px rgba(13,148,136,0.3); }
+        .hero-section {
+            background: var(--gradient-dark);
+            color: white; padding: 48px 20px 40px; border-radius: var(--card-radius);
+            text-align: center; margin-bottom: 24px; position: relative; overflow: hidden;
         }
-        .nav-logo { display: flex; align-items: center; gap: 10px; }
-        .logo-text { font-weight: 700; font-size: 1.1rem; color: #fff; }
-        .logo-badge {
-            background: linear-gradient(135deg, #00D4FF, #0099BB);
-            color: #0A1628; font-size: 0.75rem; font-weight: 700;
-            padding: 3px 10px; border-radius: 12px;
+        .hero-section::before {
+            content: ''; position: absolute; top: -60%; right: -30%; width: 80%; height: 160%;
+            background: radial-gradient(ellipse, rgba(13,148,136,0.15) 0%, transparent 60%);
         }
-        .nav-menu { display: flex; list-style: none; gap: 4px; }
-        .nav-menu a {
-            color: #C7C7CC; font-size: 0.85rem; padding: 6px 12px;
-            border-radius: 8px; transition: all 0.2s;
+        .hero-section::after {
+            content: ''; position: absolute; bottom: -40%; left: -20%; width: 60%; height: 100%;
+            background: radial-gradient(ellipse, rgba(245,158,11,0.06) 0%, transparent 55%);
         }
-        .nav-menu a:hover { color: #fff; background: rgba(0, 212, 255, 0.1); }
-        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; }
-        .hamburger span { width: 24px; height: 2px; background: #C7C7CC; border-radius: 2px; transition: 0.3s; }
-
-        /* ===== Hero ===== */
-        .hero {
-            position: relative; padding: 140px 0 80px;
-            background: linear-gradient(180deg, #0A1628 0%, #0F1D32 100%);
-            overflow: hidden;
+        .hero-section * { position: relative; z-index: 1; }
+        .hero-section h1 { font-size: 2rem; font-weight: 900; }
+        .hero-section h1 span { color: #5EEAD4; }
+        .hero-section .hero-sub { opacity: 0.75; font-size: 0.95rem; margin: 8px 0 16px; }
+        .hero-section .hero-motto { color: #5EEAD4; font-size: 1rem; font-weight: 600; letter-spacing: 2px; margin: 8px 0; }
+        .stat-badge {
+            display: inline-block; background: rgba(13,148,136,0.2);
+            padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; margin: 4px;
+            border: 1px solid rgba(13,148,136,0.3);
         }
-        .hero-bg-pattern {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.06) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 30%, rgba(255, 107, 53, 0.04) 0%, transparent 50%);
-        }
-        .hero-container { position: relative; text-align: center; }
-        .hero-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.25);
-            padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; color: #00D4FF;
-            margin-bottom: 24px;
-        }
-        .hero-title {
-            font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900; color: #fff;
-            line-height: 1.3; margin-bottom: 16px;
-        }
-        .gradient-text {
-            background: linear-gradient(135deg, #00D4FF, #33DDFF);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .hero-subtitle { font-size: 1.1rem; color: #C7C7CC; margin-bottom: 32px; line-height: 1.8; }
-        .hero-stats {
-            display: flex; justify-content: center; align-items: center; gap: 32px;
-            flex-wrap: wrap; margin-bottom: 32px;
-        }
-        .stat-item { text-align: center; }
-        .stat-number { display: block; font-size: 2rem; font-weight: 800; color: #00D4FF; font-family: 'Inter', sans-serif; }
-        .stat-label { font-size: 0.85rem; color: #C7C7CC; }
-        .stat-divider { width: 1px; height: 40px; background: rgba(0, 212, 255, 0.2); }
-        .hero-info { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
-        .info-item { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; color: #C7C7CC; }
-        .info-icon { font-size: 1.2rem; }
-
-        /* ===== Sections Common ===== */
-        section { padding: 80px 0; }
-        .section-header { text-align: center; margin-bottom: 48px; }
-        .section-tag {
-            display: inline-block; background: rgba(0, 212, 255, 0.1);
-            border: 1px solid rgba(0, 212, 255, 0.2); color: #00D4FF;
-            padding: 4px 14px; border-radius: 16px; font-size: 0.8rem; font-weight: 600;
-            margin-bottom: 12px;
-        }
-        .section-title { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; color: #fff; margin-bottom: 12px; }
-        .section-desc { font-size: 1rem; color: #C7C7CC; max-width: 600px; margin: 0 auto; }
-
-        /* ===== Pain Points ===== */
-        .pain-points { background: #0A1628; }
-        .pain-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 40px; }
-        .pain-item {
-            display: flex; align-items: flex-start; gap: 14px;
-            background: #0F1D32; border: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 20px; border-radius: 12px; transition: border-color 0.2s;
-        }
-        .pain-item:hover { border-color: rgba(0, 212, 255, 0.2); }
-        .pain-icon { font-size: 1.5rem; flex-shrink: 0; }
-        .pain-item p { font-size: 0.95rem; }
-        .solution-bridge { text-align: center; margin-top: 20px; }
-        .bridge-text { font-size: 1.1rem; line-height: 1.8; }
-        .highlight { color: #FF6B35; font-weight: 700; font-size: 1.2rem; }
-
-        /* ===== Features ===== */
-        .features { background: #0F1D32; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-        .feature-card {
-            background: #0A1628; border: 1px solid rgba(0, 212, 255, 0.1);
-            padding: 28px; border-radius: 16px; text-align: center; transition: transform 0.2s, border-color 0.2s;
-        }
-        .feature-card:hover { transform: translateY(-4px); border-color: rgba(0, 212, 255, 0.3); }
-        .feature-icon { font-size: 2rem; margin-bottom: 14px; }
-        .feature-card h3 { font-size: 1rem; color: #fff; margin-bottom: 8px; }
-        .feature-card p { font-size: 0.9rem; }
-
-        /* ===== Objectives ===== */
-        .objectives { background: #0F1D32; }
-        .objectives-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .objective-card {
-            background: #0A1628; border: 1px solid rgba(0, 212, 255, 0.1);
-            padding: 28px; border-radius: 16px; display: flex; gap: 20px;
-        }
-        .objective-number {
-            font-size: 2rem; font-weight: 900; color: rgba(0, 212, 255, 0.2);
-            font-family: 'Inter', sans-serif; flex-shrink: 0; line-height: 1;
-        }
-        .objective-content h3 { font-size: 1rem; color: #fff; margin-bottom: 8px; }
-        .objective-content p { font-size: 0.88rem; margin-bottom: 10px; }
-        .objective-list { list-style: none; }
-        .objective-list li { font-size: 0.85rem; padding: 3px 0; padding-left: 16px; position: relative; }
-        .objective-list li::before { content: ''; position: absolute; left: 0; top: 10px; width: 6px; height: 6px; border-radius: 50%; background: #00D4FF; }
-
-        /* ===== Curriculum ===== */
-        .curriculum { background: #0A1628; }
-        .schedule-title { font-size: 1.2rem; color: #fff; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(0, 212, 255, 0.15); }
-        .curriculum-card {
-            background: #0F1D32; border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 12px; padding: 24px; margin-bottom: 16px; transition: border-color 0.2s;
-        }
-        .curriculum-card:hover { border-color: rgba(0, 212, 255, 0.2); }
-        .time-badge {
-            display: inline-block; background: rgba(0, 212, 255, 0.1);
-            color: #00D4FF; font-size: 0.8rem; font-weight: 600;
-            padding: 4px 12px; border-radius: 8px; margin-bottom: 12px;
-            font-family: 'Inter', sans-serif;
-        }
-        .card-main h4 { font-size: 1.05rem; color: #fff; margin-bottom: 10px; }
-        .card-main ul { list-style: none; }
-        .card-main li { font-size: 0.9rem; padding: 4px 0; padding-left: 18px; position: relative; }
-        .card-main li::before { content: ''; position: absolute; left: 0; top: 12px; width: 5px; height: 5px; border-radius: 50%; background: #00D4FF; }
-        .card-output {
-            margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.06);
-            font-size: 0.88rem; color: #FF6B35;
-        }
-        .lunch-break {
-            text-align: center; padding: 20px; margin: 24px 0;
-            background: rgba(255, 107, 53, 0.06); border: 1px solid rgba(255, 107, 53, 0.15);
-            border-radius: 12px; font-size: 1rem; color: #FF6B35;
-        }
-
-        /* ===== Tools ===== */
-        .tools { background: #0F1D32; }
-        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-        .tool-card {
-            background: #0A1628; border: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 24px; border-radius: 16px; text-align: center; transition: transform 0.2s;
-        }
-        .tool-card:hover { transform: translateY(-3px); }
-        .tool-logo { font-size: 2.2rem; margin-bottom: 10px; }
-        .tool-card h3 { font-size: 1rem; color: #fff; margin-bottom: 6px; }
-        .tool-card p { font-size: 0.85rem; margin-bottom: 10px; }
-        .tool-use {
-            display: inline-block; background: rgba(0, 212, 255, 0.1);
-            color: #00D4FF; font-size: 0.75rem; padding: 4px 10px; border-radius: 10px;
-            margin-bottom: 8px;
-        }
-        .tool-link {
-            display: inline-block; font-size: 0.8rem; color: #00D4FF; margin-top: 4px;
-            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
-        }
-        .tool-link:hover { border-color: #00D4FF; }
-
-        /* ===== Instructor ===== */
-        .instructor { background: #0A1628; }
-        .instructor-content { max-width: 700px; margin: 0 auto; text-align: center; }
-        .instructor-title { font-size: 1.1rem; color: #00D4FF; margin-bottom: 16px; font-weight: 600; }
-        .instructor-bio { font-size: 0.95rem; margin-bottom: 28px; line-height: 1.8; }
-        .instructor-stats { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin-bottom: 28px; }
-        .instructor-stats .stat { text-align: center; }
-        .instructor-stats .stat-number { font-size: 1.8rem; font-weight: 800; color: #00D4FF; font-family: 'Inter'; }
-        .instructor-stats .stat-label { font-size: 0.8rem; color: #C7C7CC; display: block; }
-        .instructor-clients { margin-top: 20px; }
-        .instructor-clients h4 { font-size: 0.9rem; color: #fff; margin-bottom: 8px; }
-        .instructor-clients p { font-size: 0.85rem; line-height: 1.8; }
-
-        /* ===== Footer ===== */
-        .footer {
-            background: #070E1A; border-top: 1px solid rgba(0, 212, 255, 0.1);
-            padding: 40px 0; text-align: center;
-        }
-        .footer-content p { font-size: 0.85rem; margin-bottom: 4px; }
-        .footer-instructor { margin-top: 16px; font-size: 0.8rem; color: rgba(199, 199, 204, 0.6); }
-        .footer-links { margin-top: 16px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-        .footer-links a { font-size: 0.8rem; color: #00D4FF; }
-
-        /* ===== Responsive ===== */
-        @media (max-width: 768px) {
-            .nav-menu { display: none; }
-            .hamburger { display: flex; }
-            .nav-menu.active {
-                display: flex; flex-direction: column; position: absolute;
-                top: 64px; left: 0; right: 0; background: rgba(10, 22, 40, 0.98);
-                padding: 16px 24px; border-bottom: 1px solid rgba(0, 212, 255, 0.15);
-            }
-            .hero-stats { gap: 20px; }
-            .stat-divider { display: none; }
-            .hero-info { flex-direction: column; align-items: center; }
-            .objective-card { flex-direction: column; gap: 8px; }
-        }
+        .hero-wave { position: absolute; bottom: 0; left: 0; width: 100%; z-index: 0; }
+        .info-card { background: var(--brand-teal-light); border-left: 4px solid var(--brand-teal); padding: 16px; border-radius: 8px; margin-bottom: 16px; }
+        .info-card-blue { background: #EFF6FF; border-left: 4px solid #3B82F6; padding: 12px 16px; border-radius: 8px; margin-bottom: 12px; font-size: 0.9rem; }
+        .info-card-amber { background: #FFFBEB; border-left: 4px solid var(--brand-warm); padding: 12px 16px; border-radius: 8px; margin-bottom: 12px; font-size: 0.9rem; }
+        .btn-primary { background: var(--gradient-teal); border: none; color: white; font-weight: 700; box-shadow: 0 2px 8px rgba(13,148,136,0.3); }
+        .btn-primary:hover { background: linear-gradient(135deg, #0F766E 0%, #0D9488 100%); color: white; }
+        .tool-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .tool-link { background: rgba(13,148,136,0.06); padding: 5px 14px; border-radius: 16px; font-size: 0.82rem; color: var(--brand-teal-dark); text-decoration: none; border: 1px solid rgba(13,148,136,0.15); transition: all 0.2s; }
+        .tool-link:hover { background: var(--brand-teal-light); border-color: var(--brand-teal); }
+        .ethics-card { background: var(--gradient-dark); border-radius: var(--card-radius); padding: 24px; margin-bottom: 16px; color: white; box-shadow: 0 4px 16px rgba(30,41,59,0.2); }
+        .ethics-card h5 { color: #5EEAD4; font-weight: 700; margin-bottom: 16px; }
+        .ethics-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .ethics-item:hover { background: rgba(255,255,255,0.1); }
+        .ethics-icon { font-size: 1.3rem; flex-shrink: 0; }
+        .ethics-item p { margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.8); }
+        .ethics-item strong { color: #5EEAD4; }
+        .instructor-section { background: var(--gradient-dark); color: white; border-radius: var(--card-radius); padding: 40px 30px; margin-top: 40px; position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(30,41,59,0.2); }
+        .instructor-section::before { content: ''; position: absolute; top: -50%; right: -30%; width: 70%; height: 150%; background: radial-gradient(ellipse, rgba(13,148,136,0.08) 0%, transparent 55%); }
+        .instructor-section * { position: relative; }
+        .instructor-section h3 { color: #5EEAD4; font-weight: 800; margin-bottom: 20px; }
+        .instructor-section h6 { color: #5EEAD4; font-weight: 700; }
+        .instructor-section .title { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+        .instructor-section .subtitle { color: rgba(255,255,255,0.65); font-size: 0.95rem; margin-bottom: 16px; }
+        .exp-list { list-style: none; padding: 0; }
+        .exp-list li { padding: 4px 0; font-size: 0.9rem; color: rgba(255,255,255,0.8); }
+        .exp-list li::before { content: ''; display: inline-block; width: 8px; height: 8px; background: var(--gradient-teal); border-radius: 50%; margin-right: 10px; vertical-align: middle; }
+        .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 20px; }
+        .contact-item { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); padding: 14px 16px; border-radius: 10px; text-align: center; transition: all 0.2s; }
+        .contact-item:hover { background: rgba(255,255,255,0.1); border-color: rgba(13,148,136,0.3); }
+        .contact-item a { color: #5EEAD4; text-decoration: none; font-weight: 600; }
+        .contact-item .label { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .footer { text-align: center; padding: 30px 0; color: var(--brand-navy); opacity: 0.5; font-size: 0.85rem; }
+        .footer a { color: var(--brand-teal); text-decoration: none; }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <span class="logo-text">AI 賦能實戰班</span>
-                <span class="logo-badge">和椿專屬</span>
-            </div>
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="#features">課程特色</a></li>
-                <li><a href="#objectives">學習目標</a></li>
-                <li><a href="#curriculum">課程大綱</a></li>
-                <li><a href="#tools">工具介紹</a></li>
-                <li><a href="#instructor">講師介紹</a></li>
-            </ul>
-            <div class="hamburger" onclick="document.getElementById('navMenu').classList.toggle('active')">
-                <span></span><span></span><span></span>
-            </div>
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1"><i class="bi bi-gear-wide-connected me-2" style="color:var(--brand-teal)"></i>和椿科技 AI 提示詞產生器</span>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-bg-pattern"></div>
-        <div class="container hero-container">
-            <div class="hero-badge">
-                <span>&#9733;</span>
-                <span>專為和椿科技設計</span>
+    <div class="container main-container">
+        <div class="hero-section">
+            <h1>和椿科技 B2B <span>AI 提示詞產生器</span></h1>
+            <div class="hero-motto">「 會用、懂用、好用、每天用 」</div>
+            <div class="hero-sub">B2B 產品行銷與業務開發的智慧助手 — 角色 × 情境 × 期望，一鍵生成專業 AI 指令</div>
+            <div class="mt-3">
+                <span class="stat-badge">🏢 400+ 企業合作</span>
+                <span class="stat-badge">🎤 300+ 場次</span>
+                <span class="stat-badge">👥 10,000+ 學員</span>
             </div>
-            <h1 class="hero-title">
-                B2B 產品行銷與業務開發<br>
-                <span class="gradient-text">AI 賦能實戰班</span>
-            </h1>
-            <p class="hero-subtitle">
-                6 小時掌握 AI 核心技能<br>
-                從客戶研究、數據分析到競品情報，全面提升 B2B 銷售與行銷效率
-            </p>
-            <div class="hero-stats">
-                <div class="stat-item">
-                    <span class="stat-number">5x</span>
-                    <span class="stat-label">客戶研究效率</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-number">80%</span>
-                    <span class="stat-label">報告時間節省</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-number">3x</span>
-                    <span class="stat-label">提案速度</span>
-                </div>
+            <div class="mt-2" style="font-size:0.78rem;opacity:0.55;">
+                業務開發 10個 | 數據分析與文件 6個 | 專案管理 7個 | 行銷內容 5個 | 知識庫與 AI 幕僚 5個
             </div>
-            <div class="hero-info">
-                <div class="info-item">
-                    <span class="info-icon">&#128197;</span>
-                    <span>2026 年 3 月 31 日（星期二）</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-icon">&#9200;</span>
-                    <span>09:00 - 16:00（共 6 小時）</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-icon">&#128205;</span>
-                    <span>和椿科技內湖訓練教室（捷運港墘站）</span>
-                </div>
-            </div>
+            <svg class="hero-wave" viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 40C240 10 480 55 720 35C960 15 1200 50 1440 30V60H0V40Z" fill="rgba(13,148,136,0.08)"/><path d="M0 50C300 25 600 55 900 40C1100 30 1300 50 1440 45V60H0V50Z" fill="rgba(245,158,11,0.04)"/></svg>
         </div>
-    </section>
 
-    <!-- Pain Points -->
-    <section class="pain-points">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">這些困境，是不是很熟悉？</h2>
-            </div>
-            <div class="pain-grid">
-                <div class="pain-item">
-                    <div class="pain-icon">&#128269;</div>
-                    <p>客戶拜訪前研究花太多時間，資料散落各處整理不易</p>
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="info-card">
+                    <strong>💡 使用方法：</strong>選擇分類和模板 → 參考或修改預設內容 → 複製生成的 Prompt → 貼到 ChatGPT / Gemini / Claude 使用
                 </div>
-                <div class="pain-item">
-                    <div class="pain-icon">&#128203;</div>
-                    <p>規格書比較要一頁一頁翻，多品牌對比費時費力</p>
-                </div>
-                <div class="pain-item">
-                    <div class="pain-icon">&#128202;</div>
-                    <p>銷售數據分析等 IT 部門整理，自己手動拉報表耗時</p>
-                </div>
-                <div class="pain-item">
-                    <div class="pain-icon">&#128221;</div>
-                    <p>報價簡報每次重做，排版調整花的時間比寫內容還多</p>
-                </div>
-                <div class="pain-item">
-                    <div class="pain-icon">&#128450;</div>
-                    <p>競品資訊散在各人電腦裡，沒有統一的知識庫</p>
-                </div>
-                <div class="pain-item">
-                    <div class="pain-icon">&#129302;</div>
-                    <p>聽說 AI 很厲害，但不確定 B2B 場景怎麼用</p>
-                </div>
-            </div>
-            <div class="solution-bridge">
-                <div class="bridge-text">
-                    <span class="highlight">問題不是你不夠努力</span><br>
-                    而是 B2B 銷售最需要的，是少一點重複工作、多一點客戶對話時間
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Features -->
-    <section id="features" class="features">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">課程特色</span>
-                <h2 class="section-title">專為 B2B 業務與行銷團隊設計</h2>
-                <p class="section-desc">不只是學 AI 工具，更是建立一套提升銷售效率的工作方式</p>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">&#127919;</div>
-                    <h3>教學 &rarr; 操作 &rarr; 討論</h3>
-                    <p>每小時循環，確保學完立即會用</p>
+                <div class="info-card-blue">
+                    <strong>🔗 課程 AI 工具：</strong>
+                    <div class="tool-links">
+                        <a href="https://chatgpt.com" target="_blank" class="tool-link">ChatGPT</a>
+                        <a href="https://gemini.google.com" target="_blank" class="tool-link">Gemini</a>
+                        <a href="https://claude.ai" target="_blank" class="tool-link">Claude AI</a>
+                        <a href="https://notebooklm.google.com" target="_blank" class="tool-link">NotebookLM</a>
+                        <a href="https://www.perplexity.ai" target="_blank" class="tool-link">Perplexity</a>
+                        <a href="https://manus.im" target="_blank" class="tool-link">Manus</a>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#9881;</div>
-                    <h3>B2B 自動化設備實戰情境</h3>
-                    <p>所有案例都以 PCB 切板機、自動化設備場景設計</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#128736;</div>
-                    <h3>用和椿的資料練習</h3>
-                    <p>模擬銷售數據、規格書，貼近真實工作場景</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">&#129302;</div>
-                    <h3>帶走 NotebookLM + Gem</h3>
-                    <p>課堂建立競品知識庫與客製化 AI 幕僚</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Objectives -->
-    <section id="objectives" class="objectives">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">學習目標</span>
-                <h2 class="section-title">課程結束後，你將能夠</h2>
-            </div>
-            <div class="objectives-grid">
-                <div class="objective-card">
-                    <div class="objective-number">01</div>
-                    <div class="objective-content">
-                        <h3>快速客戶研究與市場調研</h3>
-                        <p>用 AI 在 10 分鐘內完成客戶背景調查與市場趨勢分析</p>
-                        <ul class="objective-list">
-                            <li>Perplexity 即時市場搜尋</li>
-                            <li>Manus 潛在客戶名單生成</li>
-                            <li>Deep Research 深度研究報告</li>
-                        </ul>
+                <div class="ethics-card">
+                    <h5><i class="bi bi-shield-lock me-2"></i>資安注意事項（B2B 企業必讀）</h5>
+                    <div class="ethics-item">
+                        <span class="ethics-icon">🔒</span>
+                        <p><strong>敏感欄位代號化：</strong>公司資料上傳 AI 時，客戶名稱用代號替代（A/B/C/D），報價金額不直接輸入</p>
+                    </div>
+                    <div class="ethics-item">
+                        <span class="ethics-icon">🚫</span>
+                        <p><strong>禁止輸入：</strong>客戶真實公司名稱、具體報價金額、合約內容、內部財務數據等機密資訊</p>
+                    </div>
+                    <div class="ethics-item">
+                        <span class="ethics-icon">✅</span>
+                        <p><strong>產出必驗證：</strong>AI 產出的數據分析、市場報告、客戶資料，最後一定要自己核實確認</p>
+                    </div>
+                    <div class="ethics-item">
+                        <span class="ethics-icon">✈️</span>
+                        <p><strong>你是機長，AI 是副駕駛：</strong>AI 做第一版草稿，專業判斷與最終責任在人</p>
                     </div>
                 </div>
-                <div class="objective-card">
-                    <div class="objective-number">02</div>
-                    <div class="objective-content">
-                        <h3>數據分析與文件萃取</h3>
-                        <p>上傳 Excel / PDF，AI 自動分析趨勢、整理規格對照表</p>
-                        <ul class="objective-list">
-                            <li>銷售數據視覺化分析</li>
-                            <li>多品牌規格書比較</li>
-                            <li>數據&#8594;簡報自動轉換</li>
-                        </ul>
-                    </div>
+
+                <div class="info-card-amber">
+                    <strong>📝 三要素黃金公式：角色 + 情境 + 期望</strong><br>
+                    每個模板都依照 Prompt 黃金三角設計：<br>
+                    ① <strong>角色</strong>：告訴 AI「你是誰」，例如資深業務經理、產品分析師<br>
+                    ② <strong>情境</strong>：描述背景脈絡，例如客戶產業、產品類型、競爭狀況<br>
+                    ③ <strong>期望</strong>：明確說出你要什麼，例如格式、字數、重點
                 </div>
-                <div class="objective-card">
-                    <div class="objective-number">03</div>
-                    <div class="objective-content">
-                        <h3>掌握 Prompt 黃金三角</h3>
-                        <p>學會角色 &#215; 情境 &#215; 期望的指令框架</p>
-                        <ul class="objective-list">
-                            <li>B2B 專用指令範本</li>
-                            <li>指令優化器實作</li>
-                            <li>不同場景的指令切換</li>
-                        </ul>
+
+                <div class="card">
+                    <div class="card-header bg-white p-3">
+                        <h5 class="mb-3"><i class="bi bi-funnel me-2"></i>1. 選擇分類與模板</h5>
+                        <div id="category-filters" class="mb-3 d-flex flex-wrap gap-2"></div>
+                        <select id="templateSelector" class="form-select form-select-lg"></select>
                     </div>
+                    <div class="card-body p-4" id="prompt-form-container"></div>
                 </div>
-                <div class="objective-card">
-                    <div class="objective-number">04</div>
-                    <div class="objective-content">
-                        <h3>建立部門競品知識庫</h3>
-                        <p>用 NotebookLM 建立團隊共用的競品情報庫</p>
-                        <ul class="objective-list">
-                            <li>上傳規格書即時比較</li>
-                            <li>對話式競品分析</li>
-                            <li>自動生成對照表</li>
-                        </ul>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-white p-3">
+                        <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>2. 複製生成結果</h5>
                     </div>
-                </div>
-                <div class="objective-card">
-                    <div class="objective-number">05</div>
-                    <div class="objective-content">
-                        <h3>打造客製化 AI 幕僚</h3>
-                        <p>用 ChatGPT Gems 建立專屬的競品分析與市場洞察助理</p>
-                        <ul class="objective-list">
-                            <li>設定角色與知識</li>
-                            <li>團隊成員共用</li>
-                            <li>持續迭代優化</li>
-                        </ul>
+                    <div class="card-body p-4">
+                        <div id="output" class="output-container">請在上方選擇案例並填寫內容...</div>
+                        <button id="copyBtn" class="btn btn-primary copy-btn">
+                            <i class="bi bi-clipboard me-1"></i>複製
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- Curriculum -->
-    <section id="curriculum" class="curriculum">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">課程大綱</span>
-                <h2 class="section-title">6 小時完整學習路徑</h2>
-            </div>
-
-            <div class="schedule-section">
-                <h3 class="schedule-title">&#127749; 上午場（09:00 - 12:00）</h3>
-
-                <div class="curriculum-card">
-                    <span class="time-badge">09:00 - 09:50</span>
-                    <div class="card-main">
-                        <h4>第一單元：AI 趨勢與產業應用</h4>
-                        <ul>
-                            <li>ChatGPT、Gemini、Claude 等大語言模型最新發展</li>
-                            <li>與和椿科技相關的 AI + 自動化設備趨勢（SMT / AMR）</li>
-                            <li>B2B 產業 AI 應用案例：業務開發、客戶研究、競品分析</li>
-                            <li>6 大工具定位與適用場景</li>
-                            <li>資安注意事項：敏感欄位用代號替代</li>
-                        </ul>
+        <div class="row justify-content-center mt-4">
+            <div class="col-lg-10">
+                <div class="instructor-section">
+                    <h3><i class="bi bi-person-badge me-2"></i>講師介紹</h3>
+                    <div class="title">黃敬峰（阿峰老師／AI峰哥）</div>
+                    <div class="subtitle">企業 AI 實戰培訓專家｜讓每個人都會用 AI 解決工作問題</div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6>現職</h6>
+                            <ul class="exp-list">
+                                <li>交點文化股份有限公司 負責人</li>
+                                <li>台灣・馬來西亞・香港 AI 講師</li>
+                                <li>Google Gemini 認證講師</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>教學實績</h6>
+                            <ul class="exp-list">
+                                <li>超過 1,000 小時 AI 工作坊經驗</li>
+                                <li>累計服務超過 300 間企業</li>
+                                <li>教學理念：會用、懂用、好用、每天用</li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="card-output">&#128161; 學員產出：體感理解「指令品質決定 AI 回覆品質」</div>
-                </div>
-
-                <div class="curriculum-card">
-                    <span class="time-badge">10:00 - 10:50</span>
-                    <div class="card-main">
-                        <h4>第二單元：Prompt 黃金公式與指令優化</h4>
-                        <ul>
-                            <li>黃金三角框架：角色（你是誰）&#215; 情境（背景脈絡）&#215; 期望（我要什麼）</li>
-                            <li>進階技巧：限制條件、輸出格式、Few-shot 範例</li>
-                            <li>示範：阿峰自製的 Gemini 架構指令優化器</li>
-                        </ul>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6>公部門授課經歷</h6>
+                            <ul class="exp-list">
+                                <li>行政院數位發展部</li>
+                                <li>行政院勞動力發展署</li>
+                                <li>經濟部能源署</li>
+                                <li>高雄市政府／社會局／文化局</li>
+                                <li>國立美術館、中華民國海洋委員會</li>
+                                <li>新竹市衛生局、嘉義縣政府</li>
+                                <li>財團法人中衛發展中心</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>企業授課經歷</h6>
+                            <ul class="exp-list">
+                                <li>台灣理光、華碩電腦</li>
+                                <li>南山人壽、新加坡商蝦皮</li>
+                                <li>歐德傢俱、裕隆日產</li>
+                                <li>順益集團、南都汽車集團（Toyota 經銷商）</li>
+                                <li>日商 TOTO、雅丰連鎖醫美診所</li>
+                                <li>Happy Hair 連鎖髮廊</li>
+                                <li>全家便利商店</li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="card-output">&#128161; 學員產出：一個屬於自己工作場景的完整 Prompt + 優化器體驗</div>
-                </div>
-
-                <div class="curriculum-card">
-                    <span class="time-badge">11:00 - 12:00</span>
-                    <div class="card-main">
-                        <h4>第三單元：AI 深度市調與客戶開發</h4>
-                        <ul>
-                            <li>Deep Research 概念：深度研究與一般搜尋的差異</li>
-                            <li>Perplexity 實戰：即時搜尋 + 來源標註，快速情報蒐集</li>
-                            <li>Manus 客戶開發：自動爬取目標客戶資料</li>
-                            <li>實際案例：找中南部 PCB / 半導體工廠的採購負責人</li>
-                        </ul>
+                    <hr style="border-color:rgba(255,255,255,0.15);margin:24px 0;">
+                    <h6 style="margin-bottom:12px;">聯絡資訊 & 社群</h6>
+                    <div class="contact-grid">
+                        <div class="contact-item">
+                            <div class="label">官方網站</div>
+                            <a href="https://www.autolab.cloud" target="_blank"><i class="bi bi-globe me-1"></i>www.autolab.cloud</a>
+                        </div>
+                        <div class="contact-item">
+                            <div class="label">部落格</div>
+                            <a href="https://blog.autolab.cloud" target="_blank"><i class="bi bi-journal-text me-1"></i>blog.autolab.cloud</a>
+                        </div>
+                        <div class="contact-item">
+                            <div class="label">Email</div>
+                            <a href="mailto:ai@autolab.cloud"><i class="bi bi-envelope me-1"></i>ai@autolab.cloud</a>
+                        </div>
+                        <div class="contact-item">
+                            <div class="label">手機 / LINE</div>
+                            <a href="tel:0976715102"><i class="bi bi-line me-1"></i>0976-715-102</a>
+                        </div>
                     </div>
-                    <div class="card-output">&#128161; 學員產出：一份市場趨勢摘要 + 一份潛在客戶名單</div>
-                </div>
-            </div>
-
-            <div class="lunch-break">
-                <span>&#127869; 午休（12:00 - 13:00）</span>
-            </div>
-
-            <div class="schedule-section">
-                <h3 class="schedule-title">&#9728; 下午場（13:00 - 16:00）</h3>
-
-                <div class="curriculum-card">
-                    <span class="time-badge">13:00 - 13:50</span>
-                    <div class="card-main">
-                        <h4>第四單元：數據分析與文件萃取 + 數據&#8594;簡報</h4>
-                        <ul>
-                            <li>上傳 Excel / CSV &#8594; AI 分析 &#8594; 視覺化圖表</li>
-                            <li>PDF / Word 文件萃取：摘要、比較、翻譯（原廠規格書情境）</li>
-                            <li>敏感資料處理：欄位替代法（客戶名 &#8594; A / B / C / D）</li>
-                            <li>數據&#8594;簡報自動化：分析結果快速轉成 3 頁商業簡報</li>
-                        </ul>
-                    </div>
-                    <div class="card-output">&#128161; 學員產出：銷售分析報告 + 規格比較表 + AI 生成簡報</div>
-                </div>
-
-                <div class="curriculum-card">
-                    <span class="time-badge">14:00 - 14:50</span>
-                    <div class="card-main">
-                        <h4>第五單元：競品分析與知識庫 + Gems AI 幕僚</h4>
-                        <ul>
-                            <li>NotebookLM 核心概念：你的資料、不會亂編、免費</li>
-                            <li>競品分析應用：上傳多份競品規格書 &#8594; 即時比較</li>
-                            <li>部門知識庫：產品資料、客戶 FAQ、報價基準全部匯入</li>
-                            <li>ChatGPT Gems：建立專屬 AI 幕僚，團隊共用</li>
-                        </ul>
-                    </div>
-                    <div class="card-output">&#128161; 學員產出：NotebookLM 競品知識庫 + 競品對照表 + ChatGPT Gem</div>
-                </div>
-
-                <div class="curriculum-card">
-                    <span class="time-badge">15:00 - 16:00</span>
-                    <div class="card-main">
-                        <h4>第六單元：實戰驗收 &#8212; 30 分鐘極速攻防</h4>
-                        <ul>
-                            <li>任務：對目標客戶做背景調查（Perplexity / Manus）</li>
-                            <li>任務：分析客戶需求與痛點（ChatGPT / Gemini）</li>
-                            <li>任務：產出 3-5 頁提案簡報初稿</li>
-                            <li>任務：準備 3 個拜訪時要問的關鍵問題</li>
-                            <li>成果分享 + 老師點評 + 課程總結</li>
-                        </ul>
-                    </div>
-                    <div class="card-output">&#128161; 學員產出：完整的「客戶研究 &#8594; 提案」流程成果</div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- Tools -->
-    <section id="tools" class="tools">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">工具介紹</span>
-                <h2 class="section-title">課程使用的 AI 工具</h2>
-            </div>
-            <div class="tools-grid">
-                <div class="tool-card">
-                    <div class="tool-logo">&#128172;</div>
-                    <h3>ChatGPT</h3>
-                    <p>最普及的 AI 助手，數據分析、提案文案、Gems 建立</p>
-                    <span class="tool-use">指令教學、數據分析、Gems</span><br>
-                    <a href="https://chatgpt.com" target="_blank" class="tool-link">chatgpt.com</a>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-logo">&#10024;</div>
-                    <h3>Gemini</h3>
-                    <p>Google 生態系整合、Deep Research、Canvas 簡報製作</p>
-                    <span class="tool-use">指令教學、Deep Research、Canvas</span><br>
-                    <a href="https://gemini.google.com" target="_blank" class="tool-link">gemini.google.com</a>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-logo">&#128270;</div>
-                    <h3>Perplexity</h3>
-                    <p>AI 搜尋引擎，搜尋結果附引用來源，適合快速情報蒐集</p>
-                    <span class="tool-use">深度市場調研、即時搜尋</span><br>
-                    <a href="https://www.perplexity.ai" target="_blank" class="tool-link">perplexity.ai</a>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-logo">&#127760;</div>
-                    <h3>Manus</h3>
-                    <p>自動爬取目標客戶資料，每天 300 點免費</p>
-                    <span class="tool-use">客戶開發研究、自動爬取資料</span><br>
-                    <a href="https://manus.im" target="_blank" class="tool-link">manus.im</a>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-logo">&#128211;</div>
-                    <h3>NotebookLM</h3>
-                    <p>Google 文件研究助手，上傳即分析，不會亂編</p>
-                    <span class="tool-use">競品分析、部門知識庫</span><br>
-                    <a href="https://notebooklm.google.com" target="_blank" class="tool-link">notebooklm.google.com</a>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-logo">&#129302;</div>
-                    <h3>Claude AI</h3>
-                    <p>長文處理王，邏輯條理強，深度分析</p>
-                    <span class="tool-use">長文處理、深度分析</span><br>
-                    <a href="https://claude.ai" target="_blank" class="tool-link">claude.ai</a>
-                </div>
-            </div>
+        <div class="footer mt-4">
+            <p>和椿科技股份有限公司（Aurotek, 6215）｜B2B AI 實戰班｜2026.03.31</p>
+            <p>講師：<a href="https://www.autolab.cloud" target="_blank">黃敬峰（阿峰老師）</a>｜<a href="mailto:ai@autolab.cloud">ai@autolab.cloud</a></p>
         </div>
-    </section>
+    </div>
 
-    <!-- Instructor -->
-    <section id="instructor" class="instructor">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">講師介紹</span>
-                <h2 class="section-title">黃敬峰（AI 峰哥）</h2>
-            </div>
-            <div class="instructor-content">
-                <p class="instructor-title">企業 AI 實戰培訓專家</p>
-                <p class="instructor-bio">
-                    台灣領先的企業 AI 實戰培訓專家，自生成式 AI 元年起，深入研究各種 AI 工具，擅長將技術轉化為企業可落地的實戰方案。教學風格強調「會用、懂用、好用、每天用」，讓學員不只是聽，還要動手做、帶著成果離開。
-                </p>
-                <div class="instructor-stats">
-                    <div class="stat">
-                        <span class="stat-number">400+</span>
-                        <span class="stat-label">企業與機關合作</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">300+</span>
-                        <span class="stat-label">場次課程</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">10,000+</span>
-                        <span class="stat-label">學員人次</span>
-                    </div>
-                </div>
-                <div class="instructor-clients">
-                    <h4>服務客戶（部分）</h4>
-                    <p>華碩電腦、南山人壽、蝦皮電商、裕隆日產、日商 TOTO、群益投信、英業達、國泰人壽、行政院數位發展部、經濟部能源署、金管會檢查局、雲林縣青年創業基地、外貿協會...</p>
-                </div>
-            </div>
-        </div>
-    </section>
+<script type="text/template-data">
+{
+    "name": "客戶拜訪前研究",
+    "category": "業務開發",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是一位有 10 年經驗的自動化設備 B2B 業務經理，熟悉 PCB 製造、半導體封裝、EMS 代工產業的採購流程與決策鏈"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "下週要拜訪一家位於台南的 PCB 製造工廠（代號：客戶 A），員工數約 500 人，年營收約 30 億台幣。對方正在評估升級 PCB 切板產線，目前使用中國品牌的衝壓式切板機，近期有品質問題（毛邊、微裂）。我們代理的產品是日系品牌的銑刀式切板機，價格約為中國品牌的 2-3 倍。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我產出一份拜訪前準備清單，包含：\\n1. 該客戶可能的痛點與需求分析（根據其產業特性）\\n2. 我方產品的差異化賣點（vs 中國品牌）\\n3. 預計對方會問的 5 個刁鑽問題及建議回答\\n4. 拜訪時要主動蒐集的 5 項關鍵資訊\\n5. 建議的拜訪議程（1 小時內）"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <p>B2B 產品行銷與業務開發 AI 賦能實戰班</p>
-                <p>專為和椿科技股份有限公司設計</p>
-                <p>2026 年 3 月 31 日（星期二）09:00 - 16:00</p>
-            </div>
-            <div class="footer-links">
-                <a href="https://www.autolab.cloud" target="_blank">Autolab 官網</a>
-                <a href="https://blog.autolab.cloud" target="_blank">部落格</a>
-                <a href="mailto:ai@autolab.cloud">ai@autolab.cloud</a>
-            </div>
-            <div class="footer-instructor">
-                <p>講師：黃敬峰（AI 峰哥）｜交點文化股份有限公司</p>
-            </div>
-        </div>
-    </footer>
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的專業用語與商務慣例
+2. 實用性：可以直接應用在實際業務拜訪中
+3. 格式化：結構清楚、條理分明、易於閱讀
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "客戶開發信件",
+    "category": "業務開發",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的資深業務代表，擅長用專業但不過度推銷的語氣撰寫 B2B 開發信件，熟悉自動化設備產業的商務禮儀"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "目標客戶是一家高雄的 EMS 代工廠（代號：客戶 B），員工數約 300 人，主要客戶是歐美電子品牌。他們最近在 104 上招募「自動化工程師」，顯示可能有產線升級需求。我們想推薦公司的 PCB 銑刀切板機和 AMR 搬運機器人，解決他們可能的品質控管和人力不足問題。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請撰寫一封 300 字以內的商務開發信（Email），要求：\\n1. 開頭先展示我們對該客戶產業的了解（不是直接推銷）\\n2. 點出 2-3 個他們可能面臨的產線挑戰\\n3. 簡要說明我們的解決方案如何對應這些挑戰\\n4. 結尾提出具體的下一步行動（如 30 分鐘線上 Demo）\\n5. 語氣專業親和，不要用「貴公司」這種制式稱呼"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的專業用語與商務慣例
+2. 實用性：可以直接應用在實際業務拜訪中
+3. 格式化：結構清楚、條理分明、易於閱讀
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "報價話術準備（TCO 對比中國品牌）",
+    "category": "業務開發",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是一位自動化設備產業的資深業務顧問，專精 TCO（Total Cost of Ownership）分析，擅長用數據說服客戶理解「價格 vs 價值」的差異"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "客戶 C 正在比價，我方銑刀式 PCB 切板機報價 NT$750 萬，中國品牌（類似 Seprays）報價 NT$300 萬。客戶採購主管說：『你們價格是人家的 2.5 倍，我很難跟老闆交代。』但我們的優勢是：精度高（±0.05mm vs ±0.15mm）、良率提升 3-5%、維修頻率低（年均 1 次 vs 4 次）、使用壽命 10 年 vs 5 年。客戶年產量約 50 萬片 PCB。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我準備一套 TCO 對比話術，包含：\\n1. 5 年 TCO 計算表（含設備成本、維修、耗材、良率損失、停機損失）\\n2. 將「2.5 倍價差」轉換為「每片 PCB 成本差異」的算法\\n3. 3 個說服採購主管的話術腳本（應對價格質疑）\\n4. 一頁式的 TCO 比較簡報大綱（可直接做成 PPT）\\n5. 建議的成交策略（如分期付款、租賃方案）"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的專業用語與商務慣例
+2. 實用性：可以直接應用在實際業務拜訪中
+3. 格式化：結構清楚、條理分明、易於閱讀
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "展覽會後跟進 Email",
+    "category": "業務開發",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的業務代表，剛結束 TPCA Show（台灣電路板產業國際展覽會）的展覽，需要在 48 小時內跟進展場收到的名片"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "展覽期間收到 15 張名片，其中有 5 位是 PCB 製造廠的生產經理或採購主管，對我們的銑刀切板機展現明確興趣。其中一位（代號：客戶 D）當場詢問了價格和交期，另一位（代號：客戶 E）說他們目前用的 Cencorp 設備快到壽命，正在評估替代方案。其餘 3 位是初步了解。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請針對不同溫度的潛在客戶，各撰寫一封跟進 Email：\\n1. 熱客戶（已問價格）：250 字，附上規格概要、提出安排 Demo 或現場勘查\\n2. 溫客戶（有替換需求）：200 字，展現對其現有設備的了解，提出免費產線評估\\n3. 冷客戶（初步了解）：150 字，分享一篇產業趨勢文章或成功案例，保持聯繫\\n每封都要在開頭具體提到展覽上交流的細節，讓對方記住你"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的專業用語與商務慣例
+2. 實用性：可以直接應用在實際業務拜訪中
+3. 格式化：結構清楚、條理分明、易於閱讀
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "潛在客戶名單開發",
+    "category": "業務開發",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是一位專精台灣電子製造業的市場情報分析師，熟悉 PCB、半導體封裝、EMS 代工產業的上下游供應鏈"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "和椿科技要開發中南部（台中以南）的新客戶，產品是 PCB 銑刀切板機。目標客戶條件：員工數 100 人以上、有 PCB 後段製程（切板/分板）需求、最近有擴廠或設備升級跡象（如招募自動化工程師、新聞報導擴產計畫）。目前已經有聯繫的客戶不要重複推薦。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我列出 10 家符合條件的潛在客戶名單，每家包含：\\n1. 公司名稱與地址\\n2. 主要產品/服務\\n3. 員工規模與年營收（如有公開資料）\\n4. 可能的切入角度（為什麼他們需要我們的產品）\\n5. 建議聯繫的部門/職位\\n6. 開發優先順序（高/中/低）及理由\\n\\n請以表格形式呈現，並附上資料來源"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的專業用語與商務慣例
+2. 實用性：可以直接應用在實際業務拜訪中
+3. 格式化：結構清楚、條理分明、易於閱讀
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "Call Report 撰寫",
+    "category": "業務開發",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的業務代表，需要在每次客戶拜訪後撰寫結構化的 Call Report（拜訪報告），供業務主管和 PM 團隊參考"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "今天下午拜訪了客戶 F（EMS 代工廠），與對方生產部陳經理、採購部王主任會談 1 小時。主要討論：\\n- 他們目前有 3 台舊的衝壓切板機，良率約 95%，想提升到 99%\\n- 每月切板量約 10 萬片，目前人力 6 人/班\\n- 對 AMR 搬運機器人也有興趣，想減少搬運人力\\n- 預算方面，陳經理說今年資本支出約 2,000 萬，但切板機只是其中一項\\n- 對方要求我們下週提供正式報價和 ROI 分析\\n- 競爭對手：已經有中國品牌和 Cencorp 的報價"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我撰寫一份標準的 Call Report，包含：\\n1. 拜訪基本資訊（日期、客戶代號、與會人員、地點）\\n2. 客戶現況摘要（設備、產量、人力、痛點）\\n3. 需求分析（明確需求 vs 潛在需求）\\n4. 競爭態勢（對手報價、客戶偏好）\\n5. 我方建議方案（產品組合、報價策略）\\n6. 下一步行動（待辦事項 + 負責人 + 完成日期）\\n7. 贏單機率評估（0-100%）及理由"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的專業用語與商務慣例
+2. 實用性：可以直接應用在實際業務拜訪中
+3. 格式化：結構清楚、條理分明、易於閱讀
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "客戶需求轉技術規格",
+    "category": "業務開發",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的 FAE（Field Application Engineer），專長是將客戶的業務語言轉換為技術規格需求，協助 PM 團隊準備技術提案"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "業務同仁拜訪客戶 G 後回報以下需求（口語描述）：\\n- 客戶說他們板子很薄，常常切壞，良率一直上不去\\n- 板子大小大概 A4 紙那麼大，一塊上面有 20-30 個小板\\n- 現在用人工折板，每天要處理 2,000 塊\\n- 想要機器切完直接送到下一站，不要再用人搬\\n- 預算大概 500-800 萬\\n- 希望 3 個月內可以裝機\\n- 廠房空間有限，機器不能太大"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我將上述口語描述的客戶需求，轉換為結構化的技術規格需求書，包含：\\n1. PCB 基板規格（尺寸、厚度、材質推測、連板數量）\\n2. 切板方式建議（銑刀/雷射/衝壓，附選型理由）\\n3. 產能需求計算（每日處理量 → 設備 UPH 需求）\\n4. 自動化整合需求（搬運、上下料、與產線銜接）\\n5. 場地限制與安裝條件\\n6. 交期與預算對應的機型建議\\n7. 需要向客戶進一步確認的技術問題清單"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的專業用語與商務慣例
+2. 實用性：可以直接應用在實際業務拜訪中
+3. 格式化：結構清楚、條理分明、易於閱讀
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "競品比較分析",
+    "category": "業務開發",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是自動化設備產業的競爭情報分析師，專精 PCB 切板機市場的競品分析，熟悉 Cencorp（芬蘭）、LPKF（德國）、Seprays（中國）等主要品牌的技術特點與市場定位"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "客戶 H 目前在評估三家供應商：\\n1. 和椿科技（我方）：日系品牌銑刀切板機，定位中高端\\n2. 北歐品牌（對標 Cencorp）：歐系高端銑刀切板機，價格最高\\n3. 中國品牌（對標 Seprays）：性價比路線，價格最低\\n\\n客戶是台中的 PCB 製造廠，月產量 30 萬片，主要做車用電子 PCB，品質要求高（ISO/IATF 16949）。客戶採購委員會 5 人，其中 2 人偏好低價、2 人重視品質、1 人（總經理）看長期 ROI。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請產出一份完整的競品比較分析報告，包含：\\n1. 三品牌規格對照表（速度、精度、適用板材、佔地面積、維修週期）\\n2. 價格帶比較（設備+維護+耗材 5 年 TCO）\\n3. 各品牌 SWOT 分析\\n4. 針對採購委員會 5 位成員的差異化話術\\n5. 我方的致勝策略建議（強攻點 + 防守點）\\n6. 車用電子認證（IATF 16949）的相關優勢"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的專業用語與商務慣例
+2. 實用性：可以直接應用在實際業務拜訪中
+3. 格式化：結構清楚、條理分明、易於閱讀
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "日文原廠資料翻譯",
+    "category": "業務開發",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是一位精通日文和繁體中文的技術翻譯專家，熟悉自動化設備、PCB 製造、機器人產業的專業術語，能將日文原廠技術文件翻譯成台灣業務團隊可理解的中文"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "日本原廠寄來了最新一款銑刀切板機的技術規格書（日文），業務團隊需要在 3 天內將重點內容翻譯成繁體中文，用於客戶提案。文件內容包含：設備規格表、操作流程說明、維護保養計畫、以及幾張設備照片的標注說明。總共約 15 頁。\\n\\n（請將需要翻譯的日文內容貼在這裡，或描述需要翻譯的段落重點）"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請進行翻譯並整理，要求：\\n1. 將日文技術文件翻譯為繁體中文，保持專業術語一致性\\n2. 規格數據保留原始數值，單位轉換為台灣常用單位（如有需要）\\n3. 專業術語附上日文原文（如：銑刀＝ルーターカッター）\\n4. 產出精簡版摘要（1 頁，適合業務對客戶說明）\\n5. 產出完整版翻譯（技術細節，適合 PM 和 FAE 參考）\\n6. 標示翻譯中不確定或需要向原廠確認的部分"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的專業用語與商務慣例
+2. 實用性：可以直接應用在實際業務拜訪中
+3. 格式化：結構清楚、條理分明、易於閱讀
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "季度業績簡報",
+    "category": "業務開發",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的業務部門主管，需要向副董事長和管理層報告季度業績，擅長用數據說故事，將銷售數字轉化為有洞察力的商業分析"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "需要準備 Q1 季度業績簡報（2026 年 1-3 月），數據摘要如下：\\n- 總營收：NT$X 億（vs 去年同期 +/- X%）\\n- 切板機銷售 X 台（北部 X、中部 X、南部 X）\\n- AMR 機器人銷售 X 台\\n- 新客戶開發 X 家，成交 X 家\\n- 平均成交週期 X 天\\n- 前 3 大成交案例簡述\\n- Pipeline 金額：NT$X 億\\n- 主要流失案例 2 件及原因分析"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我製作一份 10 頁以內的季度業績簡報大綱，包含：\\n1. 封面頁（季度主題金句）\\n2. 業績總覽（關鍵數據 Dashboard）\\n3. 產品線分析（各產品線營收佔比與成長率）\\n4. 區域分析（北中南業績地圖）\\n5. 客戶分析（新客戶 vs 既有客戶、產業分布）\\n6. 成功案例 Highlight（Top 3 成交案例）\\n7. Pipeline 分析（未來 2 季預測）\\n8. 競爭態勢觀察\\n9. 挑戰與因應策略\\n10. Q2 目標與行動計畫\\n\\n每頁附上建議的圖表類型和關鍵數據"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的專業用語與商務慣例
+2. 實用性：可以直接應用在實際業務拜訪中
+3. 格式化：結構清楚、條理分明、易於閱讀
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "銷售數據分析",
+    "category": "數據分析與文件",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是一位資深商業分析師，專精 B2B 設備銷售的數據分析，擅長從銷售數據中找出趨勢、異常和商業洞察，並用視覺化圖表呈現"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "我上傳了一份和椿科技過去 12 個月的銷售數據（Excel），欄位包含：月份、客戶代號、產品類別（切板機/AMR/服務機器人）、機型、數量、金額（NT$）、區域（北/中/南）、產業別（PCB/半導體/EMS/其他）、業務代表。總共約 150 筆交易紀錄。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我進行完整的銷售數據分析，產出一份報告，包含：\\n1. 整體營收趨勢（月度走勢圖 + 年增率）\\n2. 產品線分析：各產品類別的營收佔比、成長率、單價趨勢\\n3. 區域分析：北中南的業績分布與成長率\\n4. 客戶分析：前 10 大客戶貢獻度、產業分布、集中度風險\\n5. 業務代表績效：個人業績排名、成交率、平均客單價\\n6. 季節性分析：有無明顯的淡旺季？\\n7. 異常值標示：哪些數據點值得深入調查？\\n8. 3 個關鍵商業洞察和行動建議\\n\\n請用圖表呈現關鍵發現"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的數據分析標準
+2. 實用性：分析結果可以直接用於管理決策
+3. 格式化：圖表清楚、數據精準、結論明確
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "規格書比較表",
+    "category": "數據分析與文件",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的產品經理，專精 PCB 切板設備的技術規格，能快速從多份規格書中萃取關鍵參數並製作專業的比較表"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "我上傳了 3 份不同品牌的 PCB 切板機規格書（PDF）：\\n1. 品牌 A（銑刀式）：北歐製造，高端定位，對標 Cencorp\\n2. 品牌 B（UV 雷射式）：德國製造，超精密定位，對標 LPKF\\n3. 品牌 C（衝壓式）：中國製造，高性價比，對標 Seprays\\n\\n客戶要用這個比較表來做內部評估，客戶的 PCB 是手機主板用，厚度 0.8mm，尺寸 450x300mm，月產量 20 萬片。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我製作一份專業的規格比較表，包含：\\n1. 核心規格對照表（切板速度 UPH、精度、適用板厚範圍、適用板材、最大加工尺寸）\\n2. 設備外觀規格（佔地面積、重量、電源需求）\\n3. 維護保養比較（耗材更換週期、年維護費用估算）\\n4. 價格帶比較（設備價格、5 年 TCO）\\n5. 適用場景分析（各品牌最適合什麼樣的客戶/需求）\\n6. 針對此客戶的推薦結論（哪個品牌最適合，為什麼）\\n\\n格式：表格為主，附上文字分析"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的數據分析標準
+2. 實用性：分析結果可以直接用於管理決策
+3. 格式化：圖表清楚、數據精準、結論明確
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "數據轉商業簡報",
+    "category": "數據分析與文件",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是一位商業簡報設計顧問，擅長將複雜的數據分析結果轉化為高階主管一眼就懂的商業簡報，熟悉 B2B 設備產業的報告風格"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "我剛完成一份銷售數據分析，主要發現如下：\\n- Q1 營收較去年同期成長 25%，主要來自切板機新客戶\\n- AMR 機器人營收佔比從 10% 提升到 18%，成長最快\\n- 南部市場成長 40%，北部持平，中部微衰退\\n- 前 5 大客戶集中度 60%，有過度集中風險\\n- 新客戶開發數量比去年增加，但平均客單價下降 15%\\n- 服務機器人尚未有顯著營收貢獻\\n\\n需要把這些發現做成 3 頁的商業簡報，下週一管理會議用。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請將上述分析結果轉化為 3 頁商業簡報的完整文案，每頁包含：\\n\\n第 1 頁：績效總覽\\n- 標題金句 + 4 個 KPI 數據區塊 + 月度趨勢圖建議\\n\\n第 2 頁：深度洞察\\n- 3 個關鍵發現，每個附數據佐證和商業意涵\\n- 建議的圖表類型（圓餅圖/長條圖/地圖）\\n\\n第 3 頁：行動建議\\n- 3 個優先行動方案（含負責人、時程、預期效益）\\n- Q2 目標設定\\n\\n語氣簡潔有力，適合 C-level 閱讀"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的數據分析標準
+2. 實用性：分析結果可以直接用於管理決策
+3. 格式化：圖表清楚、數據精準、結論明確
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "市場規模調查",
+    "category": "數據分析與文件",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是一位專精電子製造設備市場的產業研究分析師，熟悉 TAM/SAM/SOM 分析方法，擅長從公開資料中估算市場規模"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "和椿科技的策略部門需要一份台灣 PCB 切板機市場的規模調查報告，用於年度策略規劃。需要了解：台灣 PCB 產業的整體規模、PCB 後段製程（切板/分板）的設備市場規模、主要競爭者的市佔率估算、以及未來 3 年的市場成長預測。特別關注車用電子和 AI 伺服器 PCB 帶來的成長機會。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請產出一份市場規模調查報告，包含：\\n1. TAM（總可及市場）：全球 PCB 切板設備市場規模\\n2. SAM（可服務市場）：台灣 PCB 切板設備市場規模\\n3. SOM（可獲得市場）：和椿科技可實際爭取的市場份額\\n4. 市場成長驅動力（車用電子、AI 伺服器、5G 基地台）\\n5. 主要競爭者市佔率估算（含數據來源說明）\\n6. 未來 3 年市場預測（保守/基準/樂觀情境）\\n7. 和椿科技的市場機會與建議策略\\n\\n請附上資料來源和估算方法說明"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的數據分析標準
+2. 實用性：分析結果可以直接用於管理決策
+3. 格式化：圖表清楚、數據精準、結論明確
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "客戶財務健康度評估",
+    "category": "數據分析與文件",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是一位商業信用分析師，專精台灣上市櫃電子製造業的財務分析，能從公開財報中快速評估客戶的付款能力和信用風險"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "業務部門即將跟一家上市 PCB 製造廠（代號：客戶 J）簽約，訂單金額約 NT$1,500 萬（含 2 台切板機 + 1 台 AMR + 安裝調機服務）。付款條件談到 30% 訂金、40% 出貨、30% 驗收後 60 天。財務部門要求業務先提供客戶的財務健康度評估。客戶的股票代號已知，可從公開資訊觀測站查到財報。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我建立一個客戶財務健康度評估框架，包含：\\n1. 需要查看的 5 個關鍵財務指標（流動比率、速動比率、營收趨勢、毛利率、負債比）\\n2. 各指標的安全門檻值（綠燈/黃燈/紅燈）\\n3. 信用風險評分模板（0-100 分）\\n4. 根據評分結果的付款條件建議（高分/中分/低分對應不同條件）\\n5. 需要額外調查的非財務風險因素（如訴訟、經營權變動）\\n6. 一頁式的評估報告範本（可直接填入數據使用）"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的數據分析標準
+2. 實用性：分析結果可以直接用於管理決策
+3. 格式化：圖表清楚、數據精準、結論明確
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "產業趨勢報告",
+    "category": "數據分析與文件",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是一位專精電子製造與自動化產業的研究員，擅長將產業趨勢轉化為對業務團隊有幫助的行動洞察，熟悉 PCB、半導體封裝、SMT 設備市場"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "和椿科技的管理層要求業務團隊每月提交一份產業趨勢快報，讓團隊了解市場變化和商機。本月重點關注：\\n1. AI 伺服器帶動的高階 PCB 需求（多層板、HDI 板）\\n2. 車用電子 PCB 的品質要求升級對切板設備的影響\\n3. 台灣 PCB 產業的東南亞布局（泰國/越南設廠趨勢）\\n4. 中國切板機品牌的技術追趕速度\\n5. AMR 在電子工廠的導入趨勢"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請產出一份 2 頁以內的月度產業趨勢快報，包含：\\n1. 本月重點趨勢（3-5 條，每條 100 字以內）\\n2. 每個趨勢對和椿科技的影響分析（機會 or 威脅）\\n3. 建議的業務行動（每個趨勢對應 1 個具體行動）\\n4. 值得關注的產業新聞或報告連結\\n5. 下月值得觀察的事件（展覽、法規、客戶動態）\\n\\n格式要求：簡潔有力，用項目符號，適合在晨會 5 分鐘內報告完畢"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 自動化設備產業的數據分析標準
+2. 實用性：分析結果可以直接用於管理決策
+3. 格式化：圖表清楚、數據精準、結論明確
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "專案時程規劃",
+    "category": "專案管理",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的資深專案經理（PM），負責管理從接單到驗收的整個專案生命週期，熟悉自動化設備安裝的標準流程和常見風險"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "客戶 K 下單了以下設備：\\n- 銑刀切板機 2 台\\n- AMR 搬運機器人 3 台（含產線銜接）\\n- 整合軟體系統 1 套\\n\\n關鍵條件：\\n- 客戶要求 4 個月內完成裝機驗收（含假日）\\n- 設備從日本原廠出貨，海運約 4-6 週\\n- 客戶工廠 7 月有年度歲修，希望利用歲修期間安裝\\n- AMR 需要跟客戶的 MES 系統整合，IT 部門配合度未知\\n- 客戶的廠房需要先進行地面整平工程（AMR 用）"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我製作一份完整的專案時程規劃，包含：\\n1. 甘特圖大綱（所有任務、前置關係、里程碑）\\n2. 關鍵路徑（Critical Path）標示\\n3. 各階段的負責人和交付物\\n4. 風險登記表（至少 5 個風險 + 應對措施）\\n5. 客戶端需配合事項清單（含截止日期）\\n6. 每週進度確認的會議節奏建議\\n7. 如果延遲 2 週的備案計畫\\n\\n格式：甘特圖用文字表格呈現，附上時程計算邏輯"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 設備專案管理的標準流程
+2. 實用性：可以直接作為專案管理的基礎文件
+3. 格式化：結構清楚、時程合理、風險可控
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "客戶驗收問題回覆",
+    "category": "專案管理",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的專案經理，負責回覆客戶在設備驗收階段提出的問題清單，需要語氣專業且正面，既要如實回答也要維護公司形象"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "客戶 L 的切板機已安裝完成，進入驗收測試階段。客戶工程師提出以下問題清單：\\n1. 實測切板速度比規格書標示的低 8%，為什麼？\\n2. 某些特殊形狀的 PCB 切板時有微小毛邊（0.1mm）\\n3. 設備運轉噪音似乎比展示時大\\n4. AMR 在特定路段偶爾會停下來重新定位（約 3 秒）\\n5. 操作介面的中文翻譯有幾處不通順\\n6. 維護手冊只有日文和英文版，希望提供中文版"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我撰寫一份正式的驗收問題回覆文件，每個問題包含：\\n1. 問題確認（重述客戶問題，表示已理解）\\n2. 原因分析（技術說明，用客戶看得懂的語言）\\n3. 改善方案（已做/將做的改善措施）\\n4. 時程承諾（何時完成改善）\\n5. 對驗收的影響評估（是否影響驗收通過）\\n\\n整體語氣：專業、正面、負責任，不迴避問題但也展現解決問題的積極態度"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 設備專案管理的標準流程
+2. 實用性：可以直接作為專案管理的基礎文件
+3. 格式化：結構清楚、時程合理、風險可控
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "會議記錄整理",
+    "category": "專案管理",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是專業的會議記錄整理員，能從口語化的會議逐字稿中萃取關鍵決議和待辦事項，並整理成結構化的會議記錄格式"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "今天跟客戶 M 開了一場專案進度會議（1 小時），以下是重點摘要：\\n- PM 小李報告設備已到港，預計下週一可以進廠\\n- 客戶工程師王先生說地面整平還差最後一區，這週五前完成\\n- 老闆突然問能不能把 AMR 的路線改一下，從原本的 A 路線改成 B 路線（多繞 20 公尺）\\n- FAE 張工說路線修改需要重新做路徑規劃，大概要多 3 個工作天\\n- 客戶 IT 部門的 MES 介接文件還沒給我們，催了三次了\\n- 下次會議約在下週三下午 2 點\\n- 客戶提到明年可能還有另一條產線要導入"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請整理成正式的會議記錄，包含：\\n1. 會議基本資訊（日期、時間、地點、與會人員）\\n2. 議題摘要（每個議題的討論重點，3-5 行）\\n3. 決議事項（編號、內容、決議結果）\\n4. 待辦事項追蹤表（編號、事項、負責人、完成日期、狀態）\\n5. 風險/注意事項（特別需要關注的項目）\\n6. 下次會議安排\\n7. 商機備註（如有業務機會順便記下）\\n\\n格式整齊，可以直接發送給客戶確認"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 設備專案管理的標準流程
+2. 實用性：可以直接作為專案管理的基礎文件
+3. 格式化：結構清楚、時程合理、風險可控
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "客訴改善報告",
+    "category": "專案管理",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的品保經理，負責處理客訴案件並撰寫改善報告（8D Report），擅長用結構化的問題解決方法論進行根因分析"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "客戶 N 反映上個月安裝的銑刀切板機出現問題：切板後的 PCB 邊緣出現不規則毛邊（約 0.2mm），影響到後續 SMT 製程的定位精度。客戶已暫停使用該設備，要求我們在 5 個工作天內提出正式的改善報告。\\n\\n初步排查：\\n- 銑刀使用 2 週，已切約 5,000 片 PCB\\n- 毛邊出現在特定方向（順銑側較明顯）\\n- 更換新銑刀後問題暫時改善，但 3 天後又出現\\n- 客戶的 PCB 材質是 FR-4，厚度 1.0mm"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我撰寫一份 8D 改善報告，包含：\\n1. D1 團隊組成（建議的跨部門團隊成員）\\n2. D2 問題描述（5W2H 格式）\\n3. D3 臨時對策（立即可做的止血措施）\\n4. D4 根因分析（魚骨圖 + 5 Why 分析）\\n5. D5 永久對策選定（至少 3 個方案評估）\\n6. D6 實施計畫（時程、負責人、驗證方式）\\n7. D7 預防再發（標準化、水平展開）\\n8. D8 團隊表揚（結案確認）\\n\\n語氣專業嚴謹，讓客戶感受到我們認真對待"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 設備專案管理的標準流程
+2. 實用性：可以直接作為專案管理的基礎文件
+3. 格式化：結構清楚、時程合理、風險可控
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "供應商交期風險評估",
+    "category": "專案管理",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的供應鏈管理專家，負責評估日本原廠和其他供應商的交期風險，擅長制定備案計畫以確保對客戶的交期承諾"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "目前有 3 張客戶訂單需要在未來 3 個月內交貨：\\n- 訂單 1：客戶 P，2 台切板機，承諾交期 6/30\\n- 訂單 2：客戶 Q，5 台 AMR + 系統整合，承諾交期 7/15\\n- 訂單 3：客戶 R，1 台雷射切板機，承諾交期 8/31\\n\\n風險因素：\\n- 日本原廠通知核心零件（主軸馬達）缺料，可能延遲 2-4 週\\n- 海運最近有塞港問題，運送時間不穩定\\n- AMR 的 LiDAR 感測器供應商換了新料號，需要重新驗證\\n- 訂單 3 的雷射源從德國進口，目前已在運送中"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我製作一份供應商交期風險評估報告，包含：\\n1. 每張訂單的交期風險評分（紅/黃/綠）\\n2. 風險來源分析（供應端、物流端、技術端）\\n3. 各風險的發生機率和影響程度矩陣\\n4. 每張訂單的備案計畫（Plan B / Plan C）\\n5. 建議的客戶溝通策略（何時告知、如何說）\\n6. 庫存緩衝建議（哪些關鍵零件應增加安全庫存）\\n7. 週度風險監控指標和預警機制"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 設備專案管理的標準流程
+2. 實用性：可以直接作為專案管理的基礎文件
+3. 格式化：結構清楚、時程合理、風險可控
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "週報自動化",
+    "category": "專案管理",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的業務/PM，需要每週五下午提交工作週報給主管，希望用 AI 幫忙把零散的工作記錄整理成結構化的週報"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "這週做了以下事情（口語記錄）：\\n- 週一：拜訪客戶 S，談 AMR 二期擴充案，對方有興趣但要等明年預算\\n- 週二：處理客戶 T 的切板機維修問題，派工程師去換銑刀主軸\\n- 週三：上午準備客戶 U 的報價單（3台切板機+2台AMR），下午參加部門會議\\n- 週四：跟日本原廠開視訊會議，討論新機型 V3.0 的規格和定價\\n- 週五：整理本週報價單 3 份、處理行政雜事、準備下週客戶拜訪行程\\n\\n另外，Pipeline 有更新：客戶 V 的案子從「評估」推進到「報價」階段"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請整理成一份標準格式的工作週報，包含：\\n1. 本週工作摘要（3-5 個重點，每個 1-2 句話）\\n2. 客戶拜訪記錄表（客戶代號、拜訪目的、結果、下一步）\\n3. 報價/訂單進度追蹤（案件、金額、狀態、預計成交時間）\\n4. Pipeline 異動（新增/推進/流失的案件）\\n5. 問題/需要支援的事項\\n6. 下週工作計畫（列出 3-5 個重點任務）\\n\\n格式簡潔，主管 3 分鐘內可以看完重點"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 設備專案管理的標準流程
+2. 實用性：可以直接作為專案管理的基礎文件
+3. 格式化：結構清楚、時程合理、風險可控
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "跨部門協作提案",
+    "category": "專案管理",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的業務部門主管，需要向其他部門（PM、FAE、行銷、客服）提出一個跨部門協作提案，讓各部門理解合作的必要性和具體分工"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "發現一個問題：業務團隊在客戶提案階段經常需要 PM 的技術支援和行銷的案例素材，但目前各部門各做各的，常常臨時才協調，導致提案品質不穩定且效率低。\\n\\n想提出一個「售前支援快速反應機制」：\\n- 業務提出需求 → 24 小時內 PM 提供技術規格 → 48 小時內行銷提供案例 → 72 小時內完成提案\\n- 建立一個共享的提案素材庫\\n- 每週一次售前會議，同步 Pipeline 和資源需求\\n\\n目標是把提案準備時間從平均 10 天縮短到 5 天。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我撰寫一份跨部門協作提案，包含：\\n1. 問題現況分析（用數據說明目前的痛點）\\n2. 提案目標（量化的改善指標）\\n3. 協作機制設計（流程圖 + 各部門角色分工 + SLA）\\n4. 共享素材庫架構（分類、管理方式、更新頻率）\\n5. 會議節奏設計（頻率、議程、參與者）\\n6. 試行計畫（先試 1 個月 → 檢討 → 全面推行）\\n7. 各部門的好處說明（WIIFM - What's In It For Me）\\n8. 資源需求與投入成本估算"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 設備專案管理的標準流程
+2. 實用性：可以直接作為專案管理的基礎文件
+3. 格式化：結構清楚、時程合理、風險可控
+4. 資安保護：不使用真實客戶名稱，以代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "LinkedIn 產品貼文",
+    "category": "行銷內容",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的行銷專員，負責經營公司的 LinkedIn 企業頁面，目標受眾是台灣電子製造業的中高階主管（生產經理、採購主管、廠長、總經理）"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "需要發布一篇介紹公司最新銑刀切板機的 LinkedIn 貼文。產品亮點：\\n- 全新第三代機型，切板精度提升至 ±0.03mm\\n- 內建 AI 視覺辨識系統，自動偵測 PCB 瑕疵\\n- 切板速度 UPH 提升 20%\\n- 佔地面積較前代減少 15%\\n- 已有 3 家大廠導入實績\\n\\n這篇貼文的目的是引起目標客群的興趣，並導流到公司官網或業務團隊。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請撰寫一篇 LinkedIn 產品貼文，要求：\\n1. 字數 300-400 字（繁體中文）\\n2. 開頭用一個吸睛的問題或數據抓住注意力\\n3. 不要像廣告，要像業界專家分享產業洞察\\n4. 融入 1-2 個產業痛點（毛邊、良率、人力不足）\\n5. 產品亮點用具體數據說話，不要空泛形容詞\\n6. 結尾有明確的 CTA（Call to Action）\\n7. 附上 5-8 個相關 hashtag\\n8. 段落分明，適合手機閱讀\\n\\n語氣：專業但不生硬，像一位懂技術的顧問在分享"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 產業行銷的專業水準
+2. 實用性：可以直接發布或稍加修改即用
+3. 格式化：結構清楚、段落分明、適合社群媒體閱讀
+4. 資安保護：不提及具體客戶名稱，以產業或代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "產品型錄文案改寫",
+    "category": "行銷內容",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是一位 B2B 產業的文案高手，擅長把工程師寫的硬梆梆規格文字，改寫成客戶看得懂、有感覺的行銷文案，同時保持技術含金量"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "和椿科技要更新 PCB 切板機的產品型錄，原始內容是工程師寫的規格導向文字，例如：\\n\\n『本機採用高速主軸馬達，最高轉速 60,000 RPM，搭配精密伺服控制系統，X/Y 軸定位精度 ±0.03mm，最大加工尺寸 500x450mm，切板速度可達 800mm/min，適用板厚 0.2-3.2mm，設備尺寸 1200x1500x1800mm。』\\n\\n這種文字客戶看不下去，需要改成有說服力的行銷文案。型錄會用在展覽、客戶拜訪、官網下載。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請將工程規格文字改寫為行銷導向的產品型錄文案，包含：\\n1. 產品標語（一句話讓客戶記住這台機器的價值）\\n2. 產品介紹（200 字，強調客戶利益而非功能規格）\\n3. 3 個核心賣點（每個 50 字，用「客戶痛點 → 我方解決方案 → 效益」的邏輯）\\n4. 技術規格表（保留完整數據，但排版更易讀）\\n5. 適用產業/場景描述（讓客戶自我對號入座）\\n6. CTA（聯繫業務/索取報價的引導語）\\n\\n風格：專業但有溫度，B2B 客戶看了覺得這家公司很懂我"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 產業行銷的專業水準
+2. 實用性：可以直接發布或稍加修改即用
+3. 格式化：結構清楚、段落分明、適合社群媒體閱讀
+4. 資安保護：不提及具體客戶名稱，以產業或代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "客戶成功案例",
+    "category": "行銷內容",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的行銷經理，擅長撰寫 B2B 客戶成功案例（Case Study），能把技術導入過程寫成一個有說服力的商業故事"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "需要撰寫一篇客戶成功案例，素材如下：\\n- 客戶：代號「南部 PCB 大廠」（不能露出公司名），員工 800 人\\n- 問題：原有 5 台中國品牌衝壓切板機，良率僅 94%，毛邊問題導致客訴頻繁\\n- 導入：和椿科技銑刀切板機 3 台，AMR 2 台\\n- 成果：良率提升至 99.2%，客訴降低 80%，每月節省 NT$45 萬（人力+報廢）\\n- 週期：從評估到正式量產 4 個月\\n- 客戶回饋：『原本以為只是換台機器，沒想到整條產線的效率都提升了』\\n\\n這篇案例要放在官網、型錄、和業務提案中使用。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請撰寫一篇完整的客戶成功案例，包含：\\n1. 標題（一句話點出成果，如「良率從 94% 提升到 99.2% 的秘密」）\\n2. 客戶背景（產業、規模、挑戰，100 字）\\n3. 痛點描述（用數據量化問題的嚴重性，150 字）\\n4. 解決方案（導入了什麼、怎麼實施，200 字）\\n5. 導入過程（時程、關鍵里程碑、克服的挑戰，150 字）\\n6. 成果數據（用表格呈現 Before vs After）\\n7. 客戶證言（引用語錄）\\n8. 關鍵成功因素（3 點）\\n\\n總字數 800-1000 字，語氣客觀有說服力"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 產業行銷的專業水準
+2. 實用性：可以直接發布或稍加修改即用
+3. 格式化：結構清楚、段落分明、適合社群媒體閱讀
+4. 資安保護：不提及具體客戶名稱，以產業或代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "EDM 電子報",
+    "category": "行銷內容",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的數位行銷專員，負責每月一期的電子報（EDM），目標是讓客戶和潛在客戶持續關注和椿的產品和產業動態"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "需要製作本月的電子報內容，這期的素材有：\\n1. 新產品發布：第三代銑刀切板機上市\\n2. 產業趨勢：AI 伺服器帶動高階 PCB 需求成長 30%\\n3. 客戶案例：代號「中部汽車電子廠」導入 AMR 後效率提升 40%\\n4. 展覽預告：下月將參加 TPCA Show，攤位號碼 A123\\n5. 技術專欄：銑刀式 vs 雷射式切板的選型指南\\n\\n收件人名單約 500 人（現有客戶 200 + 潛在客戶 300），開信率目標 25%。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請設計一份完整的 EDM 電子報內容，包含：\\n1. Email 主旨行（3 個版本 A/B/C 測試用，25 字以內，要有吸引力）\\n2. 預覽文字（40 字以內，補充主旨行的資訊）\\n3. 開場白（3 句話，建立與讀者的連結）\\n4. 主要文章區塊 x 3（每塊 100 字 + 一個 CTA 按鈕文案）\\n5. 側邊快訊區（展覽預告、近期活動）\\n6. 結尾語（邀請回信互動）\\n7. 每個區塊的建議配圖說明\\n\\n語氣：專業但親和，像產業內的老朋友在分享資訊"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 產業行銷的專業水準
+2. 實用性：可以直接發布或稍加修改即用
+3. 格式化：結構清楚、段落分明、適合社群媒體閱讀
+4. 資安保護：不提及具體客戶名稱，以產業或代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "SEO 產品頁優化",
+    "category": "行銷內容",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是一位 B2B 產業的 SEO 專家，擅長將產品頁面優化到在 Google 搜尋結果中獲得更好的排名，熟悉電子製造設備相關的搜尋行為"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "和椿科技的官網有一個 PCB 切板機的產品頁面，目前 SEO 表現不佳，搜尋「PCB 切板機」「PCB 分板機」「PCB router machine」等關鍵字時排名在第 3-4 頁。頁面目前只有簡單的產品照片和規格表，缺乏文字內容。\\n\\n目標是讓這個頁面在「PCB 切板機」「PCB 分板機」「PCB depaneling」等關鍵字上排進 Google 前 10 名。目標市場是台灣的 PCB 製造廠和 EMS 代工廠。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我優化這個產品頁面的 SEO 內容，包含：\\n1. 目標關鍵字研究（主要、次要、長尾關鍵字各 5 個）\\n2. 頁面 Title Tag（60 字以內，含主要關鍵字）\\n3. Meta Description（155 字以內，有吸引力的摘要）\\n4. H1 標題 + H2/H3 子標題架構\\n5. 產品介紹文案（800 字，自然融入關鍵字，不堆砌）\\n6. FAQ 區塊（5 個常見問題，針對搜尋意圖設計）\\n7. 內部連結建議（連到哪些相關頁面）\\n8. Schema Markup 建議（產品結構化資料）\\n\\n所有內容使用繁體中文，符合台灣用語"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 產業行銷的專業水準
+2. 實用性：可以直接發布或稍加修改即用
+3. 格式化：結構清楚、段落分明、適合社群媒體閱讀
+4. 資安保護：不提及具體客戶名稱，以產業或代號替代
+</script>
+
+<script type="text/template-data">
+{
+    "name": "競品規格知識庫建立",
+    "category": "知識庫與 AI 幕僚",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是和椿科技的產品策略分析師，負責建立和維護一個完整的競品規格知識庫，讓業務和 PM 團隊可以隨時查詢競品資訊"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "和椿科技需要在 NotebookLM 上建立一個 PCB 切板設備的競品知識庫。主要競爭品牌：\\n1. Cencorp（芬蘭）：銑刀式，高端市場，NT$650-900 萬\\n2. LPKF（德國）：UV 雷射式，超精密，NT$1,200-1,800 萬\\n3. Seprays（中國）：銑刀+衝壓，性價比路線，NT$250-400 萬\\n\\n目前有的資料：3 份模擬規格書（PDF）、過去半年蒐集的展覽資料、業務拜訪中客戶提到的競品資訊零散筆記。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我設計一個 NotebookLM 競品知識庫的建立計畫，包含：\\n1. 知識庫架構設計（哪些來源文件、如何分類命名）\\n2. 每個競品品牌的標準資料蒐集模板（規格、定價、優劣勢、市佔率、代表客戶）\\n3. 建庫後的 10 個測試問題（確認知識庫可以回答的典型查詢）\\n4. 知識庫更新 SOP（多久更新一次、由誰負責、更新什麼內容）\\n5. 業務團隊的使用教學（3 個最常用的查詢場景和指令範例）\\n6. 進階應用：如何用知識庫自動產出客戶提案的競品比較頁\\n\\n格式：步驟化教學，讓沒用過 NotebookLM 的同仁也能照著做"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 產業知識管理的最佳實踐
+2. 實用性：步驟清楚，新手也能照著操作
+3. 格式化：結構清楚、易於跟隨的教學格式
+4. 資安保護：提醒哪些資料不能上傳到知識庫
+</script>
+
+<script type="text/template-data">
+{
+    "name": "NotebookLM 部門知識庫",
+    "category": "知識庫與 AI 幕僚",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是企業知識管理顧問，專精用 AI 工具幫企業建立部門級的知識庫系統，熟悉 NotebookLM 的功能和限制"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "和椿科技的業務部門想用 NotebookLM 建立一個部門知識庫，收納以下類型的文件：\\n- 產品型錄（和椿全產品線：切板機、AMR、服務機器人）\\n- 歷年 Call Report 精華（去掉客戶真名的版本）\\n- 常見客戶 FAQ（技術問題、售後問題）\\n- 報價基準表（非機密版本，只有公開定價範圍）\\n- 成功案例集\\n- 產業趨勢報告\\n\\n目標是讓新進業務可以快速上手，老手可以快速查找資訊。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我設計一個完整的部門知識庫建置方案，包含：\\n1. 知識庫架構（建議分幾個 Notebook、每個放什麼內容）\\n2. 文件上傳前的脫敏 SOP（哪些資訊要移除或代號化）\\n3. 命名規則（Notebook 和來源文件的命名方式）\\n4. 典型使用場景 x 5（每個場景附查詢指令範例）\\n   - 場景 1：拜訪前快速了解一個產品的規格和賣點\\n   - 場景 2：客戶問了一個技術問題，快速找答案\\n   - 場景 3：準備提案時需要成功案例\\n   - 場景 4：新人入職，了解公司產品線全貌\\n   - 場景 5：產出一份客戶提案的初稿\\n5. 維護計畫（更新頻率、負責人、品質管控）"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 產業知識管理的最佳實踐
+2. 實用性：步驟清楚，新手也能照著操作
+3. 格式化：結構清楚、易於跟隨的教學格式
+4. 資安保護：提醒哪些資料不能上傳到知識庫
+</script>
+
+<script type="text/template-data">
+{
+    "name": "Gemini Gems 競品比對助手",
+    "category": "知識庫與 AI 幕僚",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是 AI 應用導入顧問，專精幫企業團隊設計 ChatGPT Gems / Gemini Gems 的客製化 AI 助手，能將業務知識封裝成可重複使用的 AI 幕僚"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "和椿科技的業務團隊想建立一個「競品比對 Gem」，業務只要輸入客戶的需求（如板材類型、尺寸、月產量、預算），Gem 就能自動比對我方產品和競品的差異，並產出一份簡短的比較報告和建議話術。\\n\\n需要上傳到 Gem 的知識：\\n- 和椿全系列切板機規格\\n- 3 大競品（Cencorp/LPKF/Seprays）的公開規格\\n- 各產品的定價區間\\n- 常見的客戶反對意見和應對話術"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我設計一個「競品比對 Gem」的完整設定方案，包含：\\n1. Gem 名稱和描述（一句話說明這個 Gem 做什麼）\\n2. 系統指令（Instructions）完整文案（角色、能力、限制）\\n3. 需要上傳的知識文件清單和準備方式\\n4. 對話開場白設計（引導業務輸入正確的資訊）\\n5. 5 個測試對話範例（輸入 → 期望的輸出格式）\\n6. 使用教學（步驟化，讓所有業務都會用）\\n7. 注意事項（哪些資訊不能問 Gem、Gem 的回答需要人工確認什麼）"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 產業知識管理的最佳實踐
+2. 實用性：步驟清楚，新手也能照著操作
+3. 格式化：結構清楚、易於跟隨的教學格式
+4. 資安保護：提醒哪些資料不能上傳到知識庫
+</script>
+
+<script type="text/template-data">
+{
+    "name": "Gemini Gems 報價助手",
+    "category": "知識庫與 AI 幕僚",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是 AI 應用導入顧問，專精幫企業設計 ChatGPT Gems / Gemini Gems 的客製化 AI 助手，能將報價流程和產品知識封裝成智慧化的報價輔助工具"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "和椿科技的業務團隊在報價時常遇到以下問題：\\n- 不確定某個機型是否適合客戶的需求（選型錯誤）\\n- 忘記加上安裝調機費、運費、教育訓練費等附加費用\\n- 面對客戶殺價不知道底線在哪裡\\n- 新進業務不熟悉產品組合，報價需要反覆問 PM\\n\\n想建立一個「報價助手 Gem」，業務輸入客戶需求後，Gem 能推薦適合的產品組合和參考報價範圍（非正式報價）。\\n\\n注意：正式報價金額不能存在 Gem 裡，只能放公開的定價參考區間。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我設計一個「報價助手 Gem」的完整設定方案，包含：\\n1. Gem 名稱和描述\\n2. 系統指令（Instructions）完整文案，包含：\\n   - 角色定義（你是和椿的報價顧問）\\n   - 能力範圍（推薦產品組合、提供參考價格帶、提醒附加費用項目）\\n   - 限制條件（不能提供正式報價、不能存儲客戶機密）\\n3. 需要上傳的知識文件清單\\n4. 報價流程引導設計（一步步問業務正確的問題）\\n5. 輸出格式模板（推薦方案 + 參考價格帶 + 附加費用提醒 + 注意事項）\\n6. 5 個測試對話範例\\n7. 資安注意事項清單"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 產業知識管理的最佳實踐
+2. 實用性：步驟清楚，新手也能照著操作
+3. 格式化：結構清楚、易於跟隨的教學格式
+4. 資安保護：提醒哪些資料不能上傳到知識庫
+</script>
+
+<script type="text/template-data">
+{
+    "name": "新人培訓知識系統",
+    "category": "知識庫與 AI 幕僚",
+    "structure": [
+        {
+            "type": "textarea",
+            "id": "role",
+            "label": "👤 角色設定",
+            "placeholder": "你是企業人才發展顧問，專精設計新人入職培訓系統，擅長用 AI 工具加速新人的學習曲線，熟悉 B2B 設備業的業務培訓需求"
+        },
+        {
+            "type": "textarea",
+            "id": "context",
+            "label": "📋 情境描述",
+            "placeholder": "和椿科技每年招募 3-5 位新進業務，目前新人培訓主要靠老手帶，從入職到能獨立拜訪客戶通常需要 6 個月。痛點：\\n- 產品線複雜（切板機/AMR/服務機器人），新人很難快速掌握\\n- 每個老手教的方法不一樣，品質不一致\\n- 產業知識（PCB/半導體/EMS）需要大量時間累積\\n- 沒有統一的培訓教材，資料散落各處\\n\\n目標：用 AI 工具（NotebookLM + Gems）建立一套新人培訓知識系統，讓新人在 3 個月內達到可獨立拜訪的程度。"
+        },
+        {
+            "type": "textarea",
+            "id": "expectation",
+            "label": "🎯 期望產出",
+            "placeholder": "請幫我設計一套 AI 輔助的新人培訓知識系統，包含：\\n1. 培訓大綱（12 週的學習路徑，每週主題和目標）\\n2. 知識庫架構（用 NotebookLM 建立幾個 Notebook、各放什麼內容）\\n3. AI 幕僚設計（3 個 Gems：產品顧問、客戶模擬器、報價教練）\\n   - 每個 Gem 的角色設定和系統指令\\n4. 每週自我評估機制（用 AI 出模擬考題、模擬客戶對話）\\n5. 實作里程碑（第 4/8/12 週各要完成什麼任務）\\n6. 師傅指導清單（老手需要親自教什麼、AI 可以代勞什麼）\\n7. 預期成效對照表（傳統培訓 vs AI 輔助培訓的時程比較）"
+        }
+    ]
+}
+---PROMPT---
+請根據以下「角色、情境、期望」三要素，產出專業且可直接使用的內容。
+
+【角色】
+<<<{role}>>>
+
+【情境】
+<<<{context}>>>
+
+【期望】
+<<<{expectation}>>>
+
+請確保產出內容：
+1. 專業度：符合 B2B 產業知識管理的最佳實踐
+2. 實用性：步驟清楚，新手也能照著操作
+3. 格式化：結構清楚、易於跟隨的教學格式
+4. 資安保護：提醒哪些資料不能上傳到知識庫
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const templates = {};
+        const categories = new Set();
+
+        document.querySelectorAll('script[type="text/template-data"]').forEach(function(el, index) {
+            const id = 'template_' + index;
+            try {
+                const content = el.textContent.trim().split('---PROMPT---');
+                const header = JSON.parse(content[0]);
+                const prompt = content[1].trim();
+                templates[id] = {
+                    name: header.name,
+                    structure: header.structure,
+                    template: prompt,
+                    category: header.category || '未分類'
+                };
+                categories.add(header.category || '未分類');
+            } catch (e) {
+                console.error("Error parsing template:", e);
+            }
+        });
+
+        const filterContainer = document.getElementById('category-filters');
+        if (categories.size > 0) {
+            const categoryCounts = {};
+            Object.values(templates).forEach(t => {
+                categoryCounts[t.category] = (categoryCounts[t.category] || 0) + 1;
+            });
+
+            let allBtn = document.createElement('button');
+            allBtn.className = 'btn btn-secondary btn-sm filter-btn active';
+            allBtn.dataset.category = 'all';
+            allBtn.innerHTML = '全部顯示 <span class="template-count">(' + Object.keys(templates).length + ')</span>';
+            filterContainer.appendChild(allBtn);
+
+            const order = ['業務開發','數據分析與文件','專案管理','行銷內容','知識庫與 AI 幕僚'];
+            const icons = {'業務開發':'💼','數據分析與文件':'📊','專案管理':'📋','行銷內容':'📣','知識庫與 AI 幕僚':'🧠'};
+            order.forEach(cat => {
+                if (categories.has(cat)) {
+                    let btn = document.createElement('button');
+                    btn.className = 'btn btn-outline-secondary btn-sm filter-btn';
+                    btn.dataset.category = cat;
+                    btn.innerHTML = (icons[cat]||'') + ' ' + cat + ' <span class="template-count">(' + (categoryCounts[cat]||0) + ')</span>';
+                    filterContainer.appendChild(btn);
+                }
+            });
+        }
+
+        const populateDropdown = (filterCategory) => {
+            const selector = document.getElementById('templateSelector');
+            selector.innerHTML = '';
+            Object.keys(templates).forEach(id => {
+                const t = templates[id];
+                if (filterCategory === 'all' || t.category === filterCategory) {
+                    const opt = document.createElement('option');
+                    opt.value = id;
+                    opt.textContent = t.name;
+                    selector.appendChild(opt);
+                }
+            });
+            if (selector.options.length > 0) {
+                selector.dispatchEvent(new Event('change'));
+            }
+        };
+
+        const buildForm = (key) => {
+            if (!key || !templates[key]) return;
+            const c = document.getElementById('prompt-form-container');
+            c.innerHTML = '';
+            templates[key].structure.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'mb-3';
+                const label = document.createElement('label');
+                label.className = 'form-label';
+                label.setAttribute('for', item.id);
+                label.innerHTML = '<strong>' + item.label + '</strong>';
+                div.appendChild(label);
+
+                let el;
+                if (item.type === 'textarea') {
+                    el = document.createElement('textarea');
+                    el.className = 'form-control form-control-lg prompt-input';
+                } else {
+                    el = document.createElement('input');
+                    el.type = 'text';
+                    el.className = 'form-control prompt-input';
+                }
+                el.id = item.id;
+                el.value = item.placeholder;
+                el.addEventListener('input', updatePrompt);
+                div.appendChild(el);
+                c.appendChild(div);
+            });
+            updatePrompt();
+        };
+
+        const updatePrompt = () => {
+            const key = document.getElementById('templateSelector').value;
+            if (!key || !templates[key]) return;
+            let tpl = templates[key].template;
+            templates[key].structure.forEach(item => {
+                const el = document.getElementById(item.id);
+                const val = el ? el.value : '';
+                tpl = tpl.replace(new RegExp('<<<\\{' + item.id + '\\}>>>', 'g'), val);
+            });
+            document.getElementById('output').textContent = tpl;
+        };
+
+        filterContainer.addEventListener('click', function(e) {
+            const btn = e.target.closest('.filter-btn');
+            if (!btn) return;
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove('active', 'btn-secondary');
+                b.classList.add('btn-outline-secondary');
+            });
+            btn.classList.add('active', 'btn-secondary');
+            btn.classList.remove('btn-outline-secondary');
+            populateDropdown(btn.dataset.category);
+        });
+
+        document.getElementById('templateSelector').addEventListener('change', function() {
+            buildForm(this.value);
+        });
+
+        document.getElementById('copyBtn').addEventListener('click', function() {
+            const text = document.getElementById('output').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = this;
+                btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>已複製!';
+                setTimeout(() => btn.innerHTML = '<i class="bi bi-clipboard me-1"></i>複製', 2000);
+            });
+        });
+
+        populateDropdown('all');
+    });
+    </script>
 </body>
 </html>
